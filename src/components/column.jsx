@@ -16,12 +16,12 @@ export default function Column({
   const adjustedColor = Color(color).darken(distance / 460).hex();
   const styles = {
     backgroundColor: adjustedColor,
-    height,
-    left: number * width,
-    width,
+    height : Math.round(height),
+    left: Math.round(number * width),
+    width: Math.round(width),
     position: 'absolute',
-    top,
+    top : Math.round(top),
   };
 
-  return <div style={styles} />;
+  return <rect width={styles.width} height={styles.height} fill={styles.backgroundColor} x={styles.left} y={styles.top} />;
 }

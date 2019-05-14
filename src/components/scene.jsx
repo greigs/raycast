@@ -10,16 +10,15 @@ export default function Scene({
   width,
 }) {
   const containerStyles = useMemo(() => ({ ...styles.container, height, width }), [height, width]);
-
+//<rect style={styles.ceiling} />      <rect style={styles.floor} />
   return (
-    <div style={containerStyles}>
-      <div style={styles.ceiling} />
-      <div style={styles.floor} />
+    <svg height={containerStyles.height} width={containerStyles.width}>
+      
       {rays.map((ray, index) => (
         <Column
           color="#0000FF"
           distance={adjustDistance(ray, player)}
-          key={index} // eslint-disable-line react/no-array-index-key
+          //key={index} // eslint-disable-line react/no-array-index-key
           mapHeight={mapHeight}
           number={index}
           resolution={resolution}
@@ -27,7 +26,7 @@ export default function Scene({
           screenWidth={width}
         />
       ))}
-    </div>
+    </svg>
   );
 }
 
