@@ -1,7 +1,7 @@
-import Color from 'color';
+
 
 /* Point */
-export function Point(x, y) {
+function Point(x, y) {
     this.x = x;
     this.y = y;
   }
@@ -17,7 +17,7 @@ export function Point(x, y) {
   };
 
 /* Map */
- export function Map(height) {
+ function Map(height) {
     this.height = height;
     this.size = 10;
     this.grid = [
@@ -51,22 +51,22 @@ export function Point(x, y) {
   }
 
 /* Radians */  
-export const twoPi = 2 * Math.PI;
+const twoPi = 2 * Math.PI;
 
 // Convert degrees to radians.
-export function fromDegrees(degrees) {
+function fromDegrees(degrees) {
   return degrees * Math.PI / 180;
 }
 
 // Ensure that radians are between 0 and 2π.
-export function normalize(radians) {
+function normalize(radians) {
   const newAngle = radians % twoPi;
   return newAngle < 0 ? newAngle + twoPi : newAngle;
 }
 
 /* Ray */
 
-export function Ray(map, angle, origin) {
+function Ray(map, angle, origin) {
     this.origin = origin;
     this.angle = normalize(angle);
     this.distance = cast(map, this.angle, origin);
@@ -143,7 +143,7 @@ export function Ray(map, angle, origin) {
 const stepDistance = 1.4; // per 16ms
 const turnRotation = 0.025; // per 16ms
 
-export function Player(x, y, direction) {
+function Player(x, y, direction) {
   this.position = new Point(x, y);
   this.direction = direction;
 }
@@ -162,10 +162,11 @@ Player.prototype.castRays = function (map, fov, resolution) {
   const startAngle = this.direction + fov / 2;
 
   // Generate the angle for each ray starting from the left and sweeping to the right screen edge.
-  const rayAngles = new Array(resolution).fill(0).map((_, index) => startAngle - index * angleBetweenRays);
+  //const rayAngles = new Array(resolution).fill(0).map((_, index) => startAngle - index * angleBetweenRays);
+  const rayAngles = function(){ return new Array(resolution).fill(0).map(function(_, index) {return startAngle - index * angleBetweenRays})};
 
   // Calculate the distance from each ray to the nearest wall.
-  return rayAngles.map(angle => new Ray(map, angle, this.position));
+  return rayAngles().map(angle => new Ray(map, angle, this.position));
 };
 
 Player.prototype.turnRight = function (elapsed) {
@@ -225,6 +226,15 @@ function adjustDelta(map, proposed, delta) {
 }
 
 
+
+/* Main */
+
+
+function adjustDistance(ray, player) {
+    return ray.distance * Math.cos(ray.angle - player.direction);
+}
+
+
 let root = document.getElementById('root')
 
 
@@ -250,7 +260,7 @@ let sceneEls =
         let width = screenWidth / resolution
         let top = (screenHeight - height) / 2
         let left = number * width
-        let adjustedColor = Color(color).darken(distance / 460).hex()
+        let adjustedColor = color //Color(color).darken(distance / 460).hex()
         let el1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         el1.setAttribute('width', width)
         el1.setAttribute('height', Math.round(height))
@@ -270,9 +280,4 @@ sceneEls.forEach((el) => {
 })
 
 root.append(svgroot)
-
-//<rect width={styles.width} height={styles.height} fill={styles.backgroundColor} x={styles.left} y={styles.top}
-function adjustDistance(ray, player) {
-    return ray.distance * Math.cos(ray.angle - player.direction);
-  }
   
