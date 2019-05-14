@@ -1,3 +1,5 @@
+//import document from "document";
+Math.hypot = function(x, y){ return Math.sqrt(x*x + y*y) }
 
 
 /* Point */
@@ -11,8 +13,8 @@ function Point(x, y) {
     return new Point(this.x + x, this.y + y);
   };
   
-  // Return the distance between this point and another.
-  Point.prototype.distance = function (other) {
+  // Return the dist between this point and another.
+  Point.prototype.dist = function (other) {
     return Math.hypot(this.x - other.x, this.y - other.y);
   };
 
@@ -69,26 +71,26 @@ function normalize(radians) {
 function Ray(map, angle, origin) {
     this.origin = origin;
     this.angle = normalize(angle);
-    this.distance = cast(map, this.angle, origin);
+    this.dist = cast(map, this.angle, origin);
   }
   
-  // Determine the distance travelled before hitting a wall.
+  // Determine the dist travelled before hitting a wall.
   function cast(map, angle, origin) {
     // Determine the direction the ray is travelling.
     const up = angle > 0 && angle < Math.PI;
     const right = angle < (twoPi * 0.25) || angle > (twoPi * 0.75);
   
-    // Determine the distance to the first horizontal wall.
-    const horizontalDistance = castHorizontal(map, origin, angle, up, right);
+    // Determine the dist to the first horizontal wall.
+    const horizontaldist = castHorizontal(map, origin, angle, up, right);
   
-    // Determine the distance to the first vertical wall.
-    const verticalDistance = castVertical(map, origin, angle, up, right);
+    // Determine the dist to the first vertical wall.
+    const verticaldist = castVertical(map, origin, angle, up, right);
   
-    // Return the shortest distance between the horizontal and vertical distances.
-    return Math.min(horizontalDistance, verticalDistance);
+    // Return the shortest dist between the horizontal and vertical dists.
+    return Math.min(horizontaldist, verticaldist);
   }
   
-  // Determine the distance travelled before hitting a _horizontal_ wall.
+  // Determine the dist travelled before hitting a _horizontal_ wall.
   function castHorizontal(map, origin, angle, up, right) {
     // Calculate the coordinates of the first intersection with a grid boundary.
     const intersectionY = Math.floor(origin.y / map.height) * map.height + (up ? -0.01 : map.height);
@@ -99,12 +101,12 @@ function Ray(map, angle, origin) {
     const deltaY = up ? -map.height : map.height;
     const deltaX = Math.abs(map.height / Math.tan(angle)) * (right ? 1 : -1);
   
-    // Find the nearest wall and return the distance to it.
+    // Find the nearest wall and return the dist to it.
     const wall = findWall(map, intersection, deltaX, deltaY);
-    return wall.distance(origin);
+    return wall.dist(origin);
   }
   
-  // Determine the distance travelled before hitting a _vertical_ wall.
+  // Determine the dist travelled before hitting a _vertical_ wall.
   function castVertical(map, origin, angle, up, right) {
     // Calculate the coordinates of the first intersection with a grid boundary.
     const intersectionX = Math.floor(origin.x / map.height) * map.height + (right ? map.height : -0.01);
@@ -115,9 +117,9 @@ function Ray(map, angle, origin) {
     const deltaX = right ? map.height : -map.height;
     const deltaY = Math.abs(map.height * Math.tan(angle)) * (up ? -1 : 1);
   
-    // Find the nearest wall and return the distance to it.
+    // Find the nearest wall and return the dist to it.
     const wall = findWall(map, intersection, deltaX, deltaY);
-    return wall.distance(origin);
+    return wall.dist(origin);
   }
   
   // Process each step the ray takes until encountering a wall or the bounds of the map.
@@ -140,7 +142,7 @@ function Ray(map, angle, origin) {
   /* Player */
 
   
-const stepDistance = 1.4; // per 16ms
+const stepdist = 1.4; // per 16ms
 const turnRotation = 0.025; // per 16ms
 
 function Player(x, y, direction) {
@@ -148,7 +150,7 @@ function Player(x, y, direction) {
   this.direction = direction;
 }
 
-// Determine the distance to walls the user can see by casting rays of light from the player's
+// Determine the dist to walls the user can see by casting rays of light from the player's
 // eyes and figuring out where they intersect with a wall. The `resolution` is the number of rays
 // to cast, and `fov` determines how spread apart they will be.
 Player.prototype.castRays = function (map, fov, resolution) {
@@ -156,6 +158,7 @@ Player.prototype.castRays = function (map, fov, resolution) {
   // between each ray.
   const angleBetweenRays = fov / resolution;
 
+  const p = this;
   // The player's direction is the center of the screen, and the left edge of the screen is half
   // the field of view to the left. In our coordinate system, angles increase as we turn counter-
   // clockwise, so we add to player's current direction.
@@ -163,10 +166,10 @@ Player.prototype.castRays = function (map, fov, resolution) {
 
   // Generate the angle for each ray starting from the left and sweeping to the right screen edge.
   //const rayAngles = new Array(resolution).fill(0).map((_, index) => startAngle - index * angleBetweenRays);
-  const rayAngles = function(){ return new Array(resolution).fill(0).map(function(_, index) {return startAngle - index * angleBetweenRays})};
-
-  // Calculate the distance from each ray to the nearest wall.
-  return rayAngles().map(angle => new Ray(map, angle, this.position));
+  const arr = Array.apply(null, Array(resolution)).map(Number.prototype.valueOf,0);
+  const rayAngles2 = arr.map(function(_, index){return startAngle - index * angleBetweenRays});
+  // Calculate the dist from each ray to the nearest wall.
+  return rayAngles2.map(function(angle,index){ return new Ray(map, angle, p.position)});
 };
 
 Player.prototype.turnRight = function (elapsed) {
@@ -178,8 +181,8 @@ Player.prototype.turnLeft = function (elapsed) {
 };
 
 Player.prototype.moveForward = function (map, elapsed) {
-  const deltaX = stepDistance * (elapsed / 16) * Math.cos(this.direction);
-  const deltaY = stepDistance * (elapsed / 16) * Math.sin(this.direction);
+  const deltaX = stepdist * (elapsed / 16) * Math.cos(this.direction);
+  const deltaY = stepdist * (elapsed / 16) * Math.sin(this.direction);
 
   this.position = this.position.add(
     adjustDelta(map, this.position.add(deltaX, 0), deltaX),
@@ -188,8 +191,8 @@ Player.prototype.moveForward = function (map, elapsed) {
 };
 
 Player.prototype.moveBackward = function (map, elapsed) {
-  const deltaX = stepDistance * (elapsed / 16) * Math.cos(this.direction);
-  const deltaY = stepDistance * (elapsed / 16) * Math.sin(this.direction);
+  const deltaX = stepdist * (elapsed / 16) * Math.cos(this.direction);
+  const deltaY = stepdist * (elapsed / 16) * Math.sin(this.direction);
 
   this.position = this.position.add(
     adjustDelta(map, this.position.add(-deltaX, 0), -deltaX),
@@ -199,8 +202,8 @@ Player.prototype.moveBackward = function (map, elapsed) {
 
 // Step to the left, which is the same as stepping forward but rotated 90 degrees to the left.
 Player.prototype.moveLeft = function (map, elapsed) {
-  const deltaX = stepDistance * (elapsed / 16) * Math.cos(this.direction + Math.PI / 2);
-  const deltaY = stepDistance * (elapsed / 16) * Math.sin(this.direction + Math.PI / 2);
+  const deltaX = stepdist * (elapsed / 16) * Math.cos(this.direction + Math.PI / 2);
+  const deltaY = stepdist * (elapsed / 16) * Math.sin(this.direction + Math.PI / 2);
 
   this.position = this.position.add(
     adjustDelta(map, this.position.add(deltaX, 0), deltaX),
@@ -210,8 +213,8 @@ Player.prototype.moveLeft = function (map, elapsed) {
 
 // Step to the right, which is the same as stepping backward but rotated 90 degrees to the left.
 Player.prototype.moveRight = function (map, elapsed) {
-  const deltaX = stepDistance * (elapsed / 16) * Math.cos(this.direction + Math.PI / 2);
-  const deltaY = stepDistance * (elapsed / 16) * Math.sin(this.direction + Math.PI / 2);
+  const deltaX = stepdist * (elapsed / 16) * Math.cos(this.direction + Math.PI / 2);
+  const deltaY = stepdist * (elapsed / 16) * Math.sin(this.direction + Math.PI / 2);
 
   this.position = this.position.add(
     adjustDelta(map, this.position.add(-deltaX, 0), -deltaX),
@@ -229,55 +232,48 @@ function adjustDelta(map, proposed, delta) {
 
 /* Main */
 
-
-function adjustDistance(ray, player) {
-    return ray.distance * Math.cos(ray.angle - player.direction);
+function adjustdist(ray, player) {
+    return ray.dist * Math.cos(ray.angle - player.direction);
 }
 
 
-let root = document.getElementById('root')
-
+const subtractLight = function(color, amount){
+    let cc = parseInt(color,16) - amount;
+    let c = (cc < 0) ? 0 : (cc);
+    c = (c.toString(16).length > 1 ) ? c.toString(16) : `0${c.toString(16)}`;
+    return c;
+}
+  
+  
+const darken = (color, amount) =>{
+    color = (color.indexOf("#")>=0) ? color.substring(1,color.length) : color;
+    amount = Math.round(amount * 255);
+    return `#${subtractLight(color.substring(0,2), amount)}${subtractLight(color.substring(2,4), amount)}${subtractLight(color.substring(4,6), amount)}`;
+}
 
 
 const fov = fromDegrees(60)
 const mapHeight = 64
 const map = new Map(mapHeight)
 const player = new Player(160, 160, fromDegrees(0))
-const resolution = 20
-const screenHeight = 240
-const screenWidth = 320
+const resolution = 80
+const screenHeight = 300
+const screenWidth = 300
 
-const color="#0000FF"
-
-//const rays = useCastRays(player, map, fov, resolution);
-
+const color="#FF0000"
 let rays = player.castRays(map, fov, resolution)
-
-let sceneEls = 
-    rays.map((ray, number) => {
-        let distance = adjustDistance(ray, player)
-        let height = Math.min(mapHeight / distance * 255, screenHeight)
+rays.forEach(function(ray, number) {
+    
+        let dist = adjustdist(ray, player)
+        let height = Math.min(mapHeight / dist * 255, screenHeight)
         let width = screenWidth / resolution
-        let top = (screenHeight - height) / 2
-        let left = number * width
-        let adjustedColor = color //Color(color).darken(distance / 460).hex()
-        let el1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        el1.setAttribute('width', width)
-        el1.setAttribute('height', Math.round(height))
-        el1.setAttribute('x', Math.round(left))
-        el1.setAttribute('y', Math.round(top))
-        el1.setAttribute('fill',adjustedColor)
-        return el1
-    })
-
-let svgroot = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-svgroot.setAttribute('width',screenWidth)
-svgroot.setAttribute('height',screenHeight)
-
-
-sceneEls.forEach((el) => {
-    svgroot.append(el)
+        let top = ((screenHeight - height) / 2)
+        let left = (number * width)
+        let adjustedColor = darken(color, dist / 460)
+        let el1 = document.getElementById(number + 'r')
+        el1.width = Math.round(width)
+        el1.height = Math.round(height)
+        el1.x = Math.round(left)
+        el1.y = Math.round(top)
+        el1.style.fill = adjustedColor
 })
-
-root.append(svgroot)
-  
