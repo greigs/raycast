@@ -1,4 +1,5 @@
 //import document from "document";
+let setAttr = true
 Math.hypot = function(x, y){ return Math.sqrt(x*x + y*y) }
 
 
@@ -256,24 +257,58 @@ const fov = fromDegrees(60)
 const mapHeight = 64
 const map = new Map(mapHeight)
 const player = new Player(160, 160, fromDegrees(0))
-const resolution = 80
+const resolution = 30
 const screenHeight = 300
 const screenWidth = 300
 
-const color="#FF0000"
-let rays = player.castRays(map, fov, resolution)
-rays.forEach(function(ray, number) {
+let color="#FF0000"
+
+var rays = player.castRays(map, fov, resolution)
+let els = rays.map(function(_, number){return document.getElementById(number + 'r')})
+
+var dist = adjustdist(rays[0], player)
+var height = Math.min(mapHeight / dist * 255, screenHeight)
+var width = screenWidth / resolution
+var top1 = ((screenHeight - height) / 2)
+var left = (0 * width)
+var adjustedColor = darken(color, dist / 460)
+var el1 = els[0]
+el1.width = Math.round(width)
+el1.height = Math.round(height)
+el1.x = Math.round(left)
+el1.y = Math.round(top1)
+el1.style.fill = adjustedColor
+  
+
+
+function callback(timestamp) {
+  // Perform animation frame logic here
+  rays = player.castRays(map, fov, resolution)
+  player.turnLeft(10)
+  rays.forEach(function(ray, number) {
     
-        let dist = adjustdist(ray, player)
-        let height = Math.min(mapHeight / dist * 255, screenHeight)
-        let width = screenWidth / resolution
-        let top = ((screenHeight - height) / 2)
-        let left = (number * width)
-        let adjustedColor = darken(color, dist / 460)
-        let el1 = document.getElementById(number + 'r')
-        el1.width = Math.round(width)
-        el1.height = Math.round(height)
-        el1.x = Math.round(left)
-        el1.y = Math.round(top)
-        el1.style.fill = adjustedColor
+    dist = adjustdist(ray, player)
+    height = Math.min(mapHeight / dist * 255, screenHeight)
+    width = screenWidth / resolution
+    top1 = ((screenHeight - height) / 2)
+    left = (number * width)
+    adjustedColor = darken(color, dist / 460)
+    el1 = els[number]
+    el1.width = Math.round(width)
+    el1.height = Math.round(height)
+    el1.x = Math.round(left)
+    el1.y = Math.round(top1)
+    el1.style.fill = adjustedColor
+    if (setAttr){
+      el1.setAttribute('width', Math.round(width))
+      el1.setAttribute('height', Math.round(height))
+      el1.setAttribute('x', Math.round(left))
+      el1.setAttribute('y', Math.round(top1))
+      el1.setAttribute('fill',adjustedColor)
+    }
 })
+  // Request next frame
+  requestAnimationFrame(callback);
+}
+
+requestAnimationFrame(callback);
