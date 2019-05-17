@@ -8,11 +8,14 @@ clock.granularity = "minutes";
 
 // Get a handle on the <text> element
 const myLabel = document.getElementById("myLabel");
-
+let mins = "";
+let newText = "";
+let hours = 0
+let today = NaN
 // Update the <text> element every tick with the current time
 clock.ontick = (evt) => {
-  let today = evt.date;
-  let hours = today.getHours();
+  today = evt.date;
+  hours = today.getHours();
   if (preferences.clockDisplay === "12h") {
     // 12h format
     hours = hours % 12 || 12;
@@ -20,13 +23,12 @@ clock.ontick = (evt) => {
     // 24h format
     hours = util.zeroPad(hours);
   }
-  let mins = util.zeroPad(today.getMinutes());
-  let newText = `${hours}:${mins}`;
+  mins = util.zeroPad(today.getMinutes());
+  newText = `${hours}:${mins}`;
   if (myLabel.text !== newText){
     myLabel.text = newText;
   }
 }
-
 let setAttr = false
 Math.hypot = function(x, y){ return Math.sqrt(x*x + y*y) }
 let infinityPoint = new Point(Infinity, Infinity)
@@ -89,6 +91,12 @@ const twoPi = 2 * Math.PI;
 // Convert degrees to radians.
 function fromDegrees(degrees) {
   return degrees * Math.PI / 180;
+}
+
+function fromRadians(radians)
+{
+  var pi = Math.PI;
+  return radians * (180/pi);
 }
 
 // Ensure that radians are between 0 and 2π.
@@ -335,7 +343,7 @@ rays.forEach(function(ray, number) {
   
   dist = adjustdist(rays[number], player)
  height = Math.min(mapHeight / dist * 255, screenHeight)
- width = screenWidth / resolution
+
  top1 = ((screenHeight - height) / 2)
  left = (number * width)
  //adjustedColor = darken(color, dist / 460)
@@ -441,31 +449,97 @@ function computePath(maze, width, height, steps) {
 
     step += 1;
   }
-  const relPosX = -1 * (width/2);
-  const cameraY = 0.5;
-  const relPosZ = -1 * (height/2);
-
   return path;
 }
 
 
-let path = computePath(map.grid, 10, 10, 50);
+let path = computePath(map.grid, 10, 10, 20);
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 let pathStep = 0
-//player.position.x = path[0][0] * 50
-//player.position.y = path[0][1] * 50
+player.position.x = path[0][0] * 50
+player.position.y = path[0][1] * 50
+
+
+let right = 90
+let down = 180
+let left2 = 270
+let up =  0
+let stepSize = 10
+let turnSize = 10
+let turnSizeRads = fromDegrees(turnSize)
+let destX = Math.floor(path[pathStep + 1][0]) * 50
+let destY = Math.floor(path[pathStep + 1][1]) * 50
+let turning = true
+let targetDir = -1
+let currDir = 0
+
 async function callback(timestamp) {
   // Perform animation frame logic here
  
-  player.turnLeft(100)
-  
+  //player.turnLeft(1000
+  if (pathStep == 19){
+    pathStep = 0
+    player.position.x = path[0][0] * 50
+    player.position.y = path[0][1] * 50
+  }
+  turning = true
+  destX = Math.floor(path[pathStep + 1][0]) * 50
+  destY = Math.floor(path[pathStep + 1][1]) * 50
+
+  currDir = Math.round(fromRadians(player.direction))
+  if (currDir === 360){
+    //console.log('reset')
+    currDir = 0
+
+  }
+
+
+  if (destX > player.position.x && currDir !== up){
+    targetDir = up
+    player.direction = normalize(player.direction += turnSizeRads) 
+  }
+  else if (destX < player.position.x && currDir !== down){
+    targetDir = down
+    player.direction = normalize(player.direction += turnSizeRads) 
+  }
+  else if (destY > player.position.y && currDir !== left2){
+    targetDir = left2
+    player.direction = normalize(player.direction += turnSizeRads) 
+  }
+  else if (destY < player.position.y && currDir !== right){
+    targetDir = right
+    player.direction = normalize(player.direction += turnSizeRads) 
+  }
+  else{
+    turning = false
+    //console.log('finish turning')
+  }
+
+  if (!turning){
+    if (destX > player.position.x){
+      player.position.x += stepSize
+    }
+    else if (destX < player.position.x)  {
+      player.position.x -= stepSize
+    }
+
+    if (destY > player.position.y){
+      player.position.y += stepSize
+    }
+    else if (destY < player.position.y)  {
+      player.position.y -= stepSize
+    }
+    if (player.position.x === destX && player.position.y === destY){
+      pathStep++
+    }
+  }
+
+  //console.log('posx:' + player.position.x + ' posy:' + player.position.y +' dir:' + currDir + ' targetDir:' +  targetDir + ' pathStep:' + pathStep + ' destX:' + destX + ' destY:' + destY)
   player.castRays2(map, fov, resolution, rays)
 
-  
-  width = screenWidth / resolution
   rays.forEach(function(ray, number) {
     
     dist = adjustdist(ray, player)
@@ -476,19 +550,19 @@ async function callback(timestamp) {
     //adjustedColor = darken(color, dist / 460)
     el1 = els[number]
     //el1.width = Math.floor(width)
-    el1.height = Math.floor(height)
+    el1.height = Math.max(1, Math.floor(height))
     //el1.x = Math.floor(left)
-    el1.y = Math.floor(top1)
+    el1.y = Math.max(1, Math.floor(top1))
     //el1.style.fill = adjustedColor
     if (setAttr){
       //el1.setAttribute('width', Math.round(width))
-      el1.setAttribute('height', Math.round(height))
+      el1.setAttribute('height', Math.max(1, Math.floor(height)))
       //el1.setAttribute('x', Math.round(left))
-      el1.setAttribute('y', Math.round(top1))
+      el1.setAttribute('y', Math.max(1, Math.floor(top1)))
       //el1.setAttribute('fill',adjustedColor)
     }
 })
-  //await sleep(5)
+  //await sleep(100)
   // Request next frame
   requestAnimationFrame(callback);
 }
