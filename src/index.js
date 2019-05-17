@@ -1,7 +1,7 @@
-let setAttr = true
+var setAttr = true
 Math.hypot = function(x, y){ return Math.sqrt(x*x + y*y) }
-let infinityPoint = new Point(Infinity, Infinity)
-let tmpPoint = new Point(0,0)
+var infinityPoint = new Point(Infinity, Infinity)
+var tmpPoint = new Point(0,0)
 
 /* Point */
 function Point(x, y) {
@@ -272,8 +272,8 @@ function adjustdist(ray, player) {
 
 
 const subtractLight = function(color, amount){
-    let cc = parseInt(color,16) - amount;
-    let c = (cc < 0) ? 0 : (cc);
+    var cc = parseInt(color,16) - amount;
+    var c = (cc < 0) ? 0 : (cc);
     c = (c.toString(16).length > 1 ) ? c.toString(16) : `0${c.toString(16)}`;
     return c;
 }
@@ -294,11 +294,11 @@ const resolution = 15
 const screenHeight = 300
 const screenWidth = 300
 
-//let color="#FF0000"
-let frames= []
+//var color="#FF0000"
+var frames= []
 
-let rays = player.castRays(map, fov, resolution)
-let els = rays.map(function(_, number){return document.getElementById(number + 'r')})
+var rays = player.castRays(map, fov, resolution)
+var els = rays.map(function(_, number){return document.getElementById(number + 'r')})
 
 var dist = adjustdist(rays[0], player)
 var height = Math.min(mapHeight / dist * 255, screenHeight)
@@ -359,22 +359,22 @@ function computePath(maze, width, height, steps) {
   const path = [[xStart, yStart], [xStart+1, yStart]];
   visited[xStart][yStart] = true;
   visited[xStart+1][yStart] = true;
-  let position = [xStart+1, yStart];
-  let direction = 1;
-  let step = 0;
+  var position = [xStart+1, yStart];
+  var direction = 1;
+  var step = 0;
 
   const returnStepAway = 0.25;
   const relativeDirectionPriorities = [1, 0, 3, 2];
 
   const absoluteMapFunc = (a) => (direction+a)%4;
   while (step < maxSteps) {
-    let absoluteDirectionPriorities = relativeDirectionPriorities.map(absoluteMapFunc);
+    var absoluteDirectionPriorities = relativeDirectionPriorities.map(absoluteMapFunc);
     if (isVisited(mapDirection[absoluteDirectionPriorities[0]](position))) {
       const [first, ...rest] = absoluteDirectionPriorities;
       absoluteDirectionPriorities = [...rest, first];
     }
 
-    let ndx = 0;
+    var ndx = 0;
     while (!isThereWay(mapDirection[absoluteDirectionPriorities[ndx]](position))) {
       ndx += 1;
       if (ndx > 3) {
@@ -422,28 +422,28 @@ function computePath(maze, width, height, steps) {
 }
 
 
-let path = computePath(map.grid, 10, 10, 20);
+var path = computePath(map.grid, 10, 10, 20);
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-let pathStep = 0
+var pathStep = 0
 player.position.x = path[0][0] * 50
 player.position.y = path[0][1] * 50
 
 
-let right = 90
-let down = 180
-let left2 = 270
-let up =  0
-let stepSize = 10
-let turnSize = 10
-let turnSizeRads = fromDegrees(turnSize)
-let destX = Math.floor(path[pathStep + 1][0]) * 50
-let destY = Math.floor(path[pathStep + 1][1]) * 50
-let turning = true
-let targetDir = -1
-let currDir = 0
+var right = 90
+var down = 180
+var left2 = 270
+var up =  0
+var stepSize = 10
+var turnSize = 10
+var turnSizeRads = fromDegrees(turnSize)
+var destX = Math.floor(path[pathStep + 1][0]) * 50
+var destY = Math.floor(path[pathStep + 1][1]) * 50
+var turning = true
+var targetDir = -1
+var currDir = 0
 
 async function callback(timestamp) {
   // Perform animation frame logic here
@@ -506,7 +506,7 @@ async function callback(timestamp) {
     }
   }
 
-  //console.log('posx:' + player.position.x + ' posy:' + player.position.y +' dir:' + currDir + ' targetDir:' +  targetDir + ' pathStep:' + pathStep + ' destX:' + destX + ' destY:' + destY)
+  console.log('posx:' + player.position.x + ' posy:' + player.position.y +' dir:' + currDir + ' targetDir:' +  targetDir + ' pathStep:' + pathStep + ' destX:' + destX + ' destY:' + destY)
   player.castRays2(map, fov, resolution, rays)
 
   rays.forEach(function(ray, number) {
@@ -531,7 +531,7 @@ async function callback(timestamp) {
       //el1.setAttribute('fill',adjustedColor)
     }
 })
-  //await sleep(100)
+  await sleep(50)
   // Request next frame
   requestAnimationFrame(callback);
 }
